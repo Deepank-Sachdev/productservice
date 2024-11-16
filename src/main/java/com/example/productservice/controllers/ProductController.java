@@ -4,6 +4,8 @@ import com.example.productservice.dtos.CreateProductRequestDto;
 import com.example.productservice.models.Product;
 import com.example.productservice.services.FakeStoreProductService;
 import com.example.productservice.services.ProductService;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,14 +30,17 @@ public class ProductController {
     }
 
     @PostMapping("/products")
-    public Product createProduct(@RequestBody CreateProductRequestDto requestDto) {
-        return productService.createProduct(
-                requestDto.getTitle(),
-                requestDto.getDescription(),
-                requestDto.getImage(),
-                requestDto.getPrice(),
-                requestDto.getCategory()
-        );
+    public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequestDto requestDto) {
+        Product product = productService.createProduct(
+                            requestDto.getTitle(),
+                            requestDto.getDescription(),
+                            requestDto.getImage(),
+                            requestDto.getPrice(),
+                            requestDto.getCategory()
+                             );
+        ResponseEntity<Product> responseEntity = new ResponseEntity<>(product,
+                HttpStatusCode.valueOf(201));
+        return responseEntity;
     }
 
 }

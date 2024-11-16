@@ -2,6 +2,8 @@ package com.example.productservice.services;
 
 import com.example.productservice.dtos.FakeStoreProductDto;
 import com.example.productservice.models.Product;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,11 +21,20 @@ public class FakeStoreProductService implements ProductService {
 
     @Override
     public Product getProductDetails(Long id) {
-        FakeStoreProductDto responseDto =
-                restTemplate.getForObject("https://fakestoreapi.com/products/" + id,
-                        FakeStoreProductDto.class);
-        
-        return responseDto != null ? responseDto.toProduct() : null;
+//        FakeStoreProductDto responseDto =
+//                restTemplate.getForObject("https://fakestoreapi.com/products/" + id,
+//                        FakeStoreProductDto.class);
+//        return responseDto != null ? responseDto.toProduct() : null;
+
+        ResponseEntity<FakeStoreProductDto> responseDto = restTemplate.getForEntity(
+                "https://fakestoreapi.com/products/" + id, FakeStoreProductDto.class);
+
+        if (responseDto.getStatusCode() == HttpStatusCode.valueOf(404)){
+            //Show error
+        } else if (responseDto.getStatusCode() == HttpStatusCode.valueOf(500)) {
+            // Error
+        }
+        return responseDto.getBody().toProduct();
     }
 
     @Override
