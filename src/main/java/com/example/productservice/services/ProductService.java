@@ -13,6 +13,6 @@ public interface ProductService {
     List<Product> getProductsBySort(String sort);
     List<String> getAllCategory();
     List<Product> getProductsByCategory(String category);
-    Product updateProductDetails(Long id, String title, String description, String image, double price, String category);
-    Product deleteProduct(Long id);
+    Product updateProductDetails(Long id, String title, String description, String image, double price, String category) throws Exception;
+    Product deleteProduct(Long id) throws Exception;
 }

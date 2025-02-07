@@ -17,7 +17,7 @@ public class ProductController {
 
     private ProductService productService;
 
-    public ProductController(@Qualifier("fakeStoreProductService") ProductService productService) {
+    public ProductController(@Qualifier("databaseProductService") ProductService productService) {
         this.productService = productService;
     }
 //    ProductService productService = new FakeStoreProductService();
@@ -67,7 +67,7 @@ public class ProductController {
     }
 
     @PutMapping("/products/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody CreateProductRequestDto requestDto) {
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody CreateProductRequestDto requestDto) throws Exception {
         Product product = productService.updateProductDetails(id,
                 requestDto.getTitle(),
                 requestDto.getDescription(),
@@ -78,7 +78,7 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
     @DeleteMapping("/products/{id}")
-    public ResponseEntity<Product> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Product> deleteProduct(@PathVariable Long id) throws Exception {
         Product deletedProduct = productService.deleteProduct(id);
         if (deletedProduct != null) {
             return ResponseEntity.ok(deletedProduct);

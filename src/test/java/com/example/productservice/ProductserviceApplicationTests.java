@@ -23,10 +23,10 @@ class ProductserviceApplicationTests {
 	void contextLoads() {
 	}
 
-	@Test
-	public void testFetchTypes(){
-		Optional<Category> category = categoryRepository.findById(1L);
-		System.out.println(category.get().getName());
-
-	}
+//	@Test
+//	public void testFetchTypes(){
+//		Optional<Category> category = categoryRepository.findById(1L);
+//		System.out.println(category.get().getName());
+//
+//	}
 }

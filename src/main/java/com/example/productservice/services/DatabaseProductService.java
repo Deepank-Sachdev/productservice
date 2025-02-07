@@ -4,9 +4,13 @@ import com.example.productservice.models.Category;
 import com.example.productservice.models.Product;
 import com.example.productservice.repositories.CategoryRepository;
 import com.example.productservice.repositories.ProductRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+
 @Service ("databaseProductService")
 public class DatabaseProductService implements ProductService {
 
@@ -54,31 +58,71 @@ public class DatabaseProductService implements ProductService {
 
     @Override
     public List<Product> getProductsByLimit(Integer limit) {
-        return null;
+        return productRepository.findAll(PageRequest.of(0, limit)).getContent();
     }
 
     @Override
     public List<Product> getProductsBySort(String sort) {
-        return null;
+        if (sort.equalsIgnoreCase("desc")) {
+            return productRepository.findAll(Sort.by(sort).descending());
+        }
+        return productRepository.findAll(Sort.by(sort).ascending());
     }
 
     @Override
     public List<String> getAllCategory() {
-        return null;
+        return categoryRepository.findDistinctByNameNotNull();
     }
 
     @Override
     public List<Product> getProductsByCategory(String category) {
-        return null;
+        if (category == null || category.trim().isEmpty()) {
+            throw new IllegalArgumentException("Category cannot be null or empty");
+        }
+        return productRepository.findByCategoryNameIgnoreCase(category);
     }
 
     @Override
-    public Product updateProductDetails(Long id, String title, String description, String image, double price, String category) {
-        return null;
+    public Product updateProductDetails(Long id, String title, String description, String image, double price, String category) throws Exception {
+        Optional<Product> productOptional = productRepository.findById(id);
+        if (productOptional.isEmpty()) {
+            throw new Exception("Product not found");
+        }
+
+        Product product = productOptional.get();
+        product.setTitle(title);
+        product.setDescription(description);
+        product.setImageURL(image);
+        product.setPrice(price);
+
+        if (category != null) {
+            Category categoryFromDatabase = categoryRepository.findByName(category);
+
+            if (categoryFromDatabase == null) {
+                Category newCategory = new Category();
+                newCategory.setName(category);
+                categoryFromDatabase = newCategory;
+            }
+
+            product.setCategory(categoryFromDatabase);
+        }
+        else {
+            product.setCategory(product.getCategory());
+        }
+
+        return productRepository.save(product);
     }
 
     @Override
-    public Product deleteProduct(Long id) {
-        return null;
+    public Product deleteProduct(Long id) throws Exception {
+        Optional<Product> productOptional = productRepository.findById(id);
+        if (productOptional.isPresent()){
+            Product product = productOptional.get();
+            productRepository.delete(product);
+            return product;
+        }
+        else{
+            throw new Exception("Product not found");
+        }
     }
 }
