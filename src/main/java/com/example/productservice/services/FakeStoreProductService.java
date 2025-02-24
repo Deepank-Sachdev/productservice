@@ -3,6 +3,7 @@ package com.example.productservice.services;
 import com.example.productservice.dtos.FakeStoreProductDto;
 import com.example.productservice.models.Category;
 import com.example.productservice.models.Product;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -16,9 +17,11 @@ import java.util.List;
 public class FakeStoreProductService implements ProductService {
 
     private RestTemplate restTemplate;
+    private RedisTemplate<Long,Object> redisTemplate;
 
-    public FakeStoreProductService(RestTemplate restTemplate) {
 
+    public FakeStoreProductService(RestTemplate restTemplate, RedisTemplate<Long, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
         this.restTemplate = restTemplate;
     }
 
@@ -29,6 +32,11 @@ public class FakeStoreProductService implements ProductService {
 //                        FakeStoreProductDto.class);
 //        return responseDto != null ? responseDto.toProduct() : null;
 
+        Product productFromCache = (Product) redisTemplate.opsForValue().get(id);
+        if (productFromCache != null) {
+            return productFromCache;
+        }
+
         ResponseEntity<FakeStoreProductDto> responseDto = restTemplate.getForEntity(
                 "https://fakestoreapi.com/products/" + id, FakeStoreProductDto.class);
 
@@ -37,6 +45,7 @@ public class FakeStoreProductService implements ProductService {
         } else if (responseDto.getStatusCode() == HttpStatusCode.valueOf(500)) {
             // Error
         }
+        redisTemplate.opsForValue().set(id, responseDto.getBody().toProduct());
         return responseDto.getBody().toProduct();
     }
 

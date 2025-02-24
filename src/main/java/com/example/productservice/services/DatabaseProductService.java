@@ -6,6 +6,7 @@ import com.example.productservice.repositories.CategoryRepository;
 import com.example.productservice.repositories.ProductRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,18 +17,28 @@ public class DatabaseProductService implements ProductService {
 
     private ProductRepository productRepository;
     private CategoryRepository categoryRepository;
-    public DatabaseProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    private RedisTemplate <Long,Object> redisTemplate;
+
+    public DatabaseProductService(ProductRepository productRepository, CategoryRepository categoryRepository,
+                                    RedisTemplate<Long, Object> redisTemplate) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
     public Product getProductDetails(Long id) { //* add throws pnfe
 //         toDo - add null check and throw error
+        Product productFromCache = (Product) redisTemplate.opsForValue().get(id);
+        if (productFromCache != null) {
+            return productFromCache;
+        }
+
         if (productRepository.findById(id).isEmpty()) {
             // throw product not found error/exception
             return null;
         }
+        redisTemplate.opsForValue().set(id, productRepository.findById(id).get());
         return productRepository.findById(id).get();
     }
 
