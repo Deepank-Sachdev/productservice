@@ -1,6 +1,9 @@
 package com.example.productservice.controllers;
 
+import com.example.productservice.commons.AuthenticationCommons;
 import com.example.productservice.dtos.CreateProductRequestDto;
+import com.example.productservice.dtos.user.UserDto;
+import com.example.productservice.exceptions.InvalidTokenException;
 import com.example.productservice.models.Category;
 import com.example.productservice.models.Product;
 import com.example.productservice.services.FakeStoreProductService;
@@ -16,9 +19,12 @@ import java.util.List;
 public class ProductController {
 
     private ProductService productService;
+    private AuthenticationCommons authenticationCommons;
 
-    public ProductController(@Qualifier("fakeStoreProductService") ProductService productService) {
+    public ProductController(@Qualifier("fakeStoreProductService") ProductService productService,
+                                AuthenticationCommons authenticationCommons) {
         this.productService = productService;
+        this.authenticationCommons = authenticationCommons;
     }
 //    ProductService productService = new FakeStoreProductService();
 
@@ -31,14 +37,18 @@ public class ProductController {
     public List<Product> getProductsByLimit(@RequestParam("limit") Integer limit) {
         return productService.getProductsByLimit(limit);
     }
-
+    
     @GetMapping("/products-sort")
     public List<Product> getProductsBySort(@RequestParam("sort") String sort) {
         return productService.getProductsBySort(sort);
     }
 
     @GetMapping("/products/{id}")
-    public Product getProductDetails(@PathVariable Long id) {
+    public Product getProductDetails(@PathVariable Long id, @RequestHeader("Authorization") String token) throws InvalidTokenException {
+        UserDto userDto = authenticationCommons.validateToken(token);
+        if (userDto == null) {
+            throw new InvalidTokenException();
+        }
         return productService.getProductDetails(id);
     }
 
